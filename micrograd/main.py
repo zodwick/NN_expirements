@@ -1,11 +1,15 @@
+
+from visualiser import draw_dot
+
 class Value:
-    def __init__(self,data,children=(),op=""):
+    def __init__(self,data,children=(),op="",label=""):
         
         # if list then multiple pointers to same child may occur : not needed???
         
         self.data=data
         self._prev=set(children)
         self._op=op
+        self.label=label
         
     def __repr__(self) -> str:
         return f"Value({self.data})"
@@ -30,3 +34,4 @@ b=Value(-5)
 c=Value(6)
 d=a+a
 print(d._prev)
+draw_dot(d)
