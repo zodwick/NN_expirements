@@ -1,5 +1,6 @@
 
-from visualiser import draw_dot, visualize_graph
+from visualiser import draw_dot, visualize_graph,write_dot_file
+from graphviz import Source,Digraph
 
 class Value:
     def __init__(self,data,children=(),op="",label=""):
@@ -33,6 +34,15 @@ a=Value(4)
 b=Value(-5)
 c=Value(6)
 d=a+a
-print(d._prev)
-draw_dot(d)
-visualize_graph(d)
+# dot_representation=(draw_dot(d))
+# dot = Digraph(format='png')
+# dot.engine = 'dot'
+# dot.body.append(dot_representation)
+
+
+write_dot_file(d, 'graph.dot')
+
+# Render the graph
+dot = Digraph(format='png')
+dot.engine = 'dot'
+dot.render('graph', format='png', cleanup=True)
