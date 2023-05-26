@@ -54,6 +54,25 @@ class Value:
         return out
 
 
+
+
+topo_list=[]
+
+def backprop_list(x:Value):
+    visited=set()
+    for children in x._prev:
+        if children not in visited:
+            visited.add(children)
+            backprop_list(children)
+    topo_list.append(x)
+            
+            
+            
+
+    
+    
+    
+
 #input nodes
 x1=Value(2.0,label="x1")
 x2=Value(0.0,label="x2")
@@ -83,4 +102,9 @@ o.label="o"
 o.grad=1
 o._gradient()
 
-draw_dot(o)
+# draw_dot(o)
+
+
+backprop_list(o)
+for i in reversed(topo_list):
+    print(i)
