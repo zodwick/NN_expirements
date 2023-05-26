@@ -1,5 +1,3 @@
-
-from visualiser import draw_dot
 from graphviz import Source,Digraph
 import math
 
@@ -35,6 +33,26 @@ class Value:
             second.grad=self.data*out.grad
         out._gradient=_gradient
         return out   
+
+
+    def backpropogate(self):
+      topo_list=[]
+      self.grad=1
+
+      def build_backprop_list(x:Value):
+        visited=set()
+        for children in x._prev:
+          if children not in visited:
+            visited.add(children)
+            build_backprop_list(children)
+        topo_list.append(x)
+
+      build_backprop_list(self)
+      for node in reversed(topo_list):
+          node._gradient()
+
+      
+              
     # def __pow__(self,second):
     #     return Value(self.data**second.data,(self,second),"**")
     
@@ -53,25 +71,6 @@ class Value:
         out._gradient=_gradient
         return out
 
-
-
-
-topo_list=[]
-
-def backprop_list(x:Value):
-    visited=set()
-    for children in x._prev:
-        if children not in visited:
-            visited.add(children)
-            backprop_list(children)
-    topo_list.append(x)
-            
-            
-            
-
-    
-    
-    
 
 #input nodes
 x1=Value(2.0,label="x1")
@@ -99,12 +98,7 @@ n=x1w1x2w2+b
 n.label="n"
 o=n.tanh()
 o.label="o"
-o.grad=1
-o._gradient()
-
-# draw_dot(o)
+o.backpropogate()
 
 
-backprop_list(o)
-for i in reversed(topo_list):
-    print(i)
+print(x1.grad)
