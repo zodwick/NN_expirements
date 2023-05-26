@@ -1,14 +1,14 @@
 
-from visualiser import draw_dot, visualize_graph,write_dot_file
+from visualiser import draw_dot
 from graphviz import Source,Digraph
 
 class Value:
-    def __init__(self,data,children=(),op="",label=""):
+    def __init__(self,data,_children=(),op="",label=""):
         
         # if list then multiple pointers to same child may occur : not needed???
         
         self.data=data
-        self._prev=set(children)
+        self._prev=set(_children)
         self._op=op
         self.label=label
         
@@ -39,10 +39,4 @@ d=a+a
 # dot.engine = 'dot'
 # dot.body.append(dot_representation)
 
-
-write_dot_file(d, 'graph.dot')
-
-# Render the graph
-dot = Digraph(format='png')
-dot.engine = 'dot'
-dot.render('graph', format='png', cleanup=True)
+draw_dot(d)
