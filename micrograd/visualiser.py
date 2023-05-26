@@ -1,5 +1,10 @@
 from graphviz import Digraph
 
+
+import networkx as nx
+import matplotlib.pyplot as plt
+
+
 def trace(root):
     nodes, edges = set(), set()
     def build(v):
@@ -26,3 +31,28 @@ def draw_dot(root):
         dot.edge(str(id(n1)), str(id(n2)) + n2._op)
 
     return dot
+
+
+
+def visualize_graph(root_value):
+    G = nx.DiGraph()
+
+    def traverse(value):
+        G.add_node(id(value), label=str(value))
+
+        for child in value._prev:
+            G.add_edge(id(child), id(value))
+
+            if id(child) not in G.nodes:
+                traverse(child)
+
+    traverse(root_value)
+
+    pos = nx.spring_layout(G)
+    labels = nx.get_node_attributes(G, 'label')
+
+    plt.figure(figsize=(10, 8))
+    nx.draw_networkx(G, pos, with_labels=False, node_color='lightblue', node_size=1000)
+    nx.draw_networkx_labels(G, pos, labels, font_color='black', font_size=12)
+    plt.axis('off')
+    plt.show()

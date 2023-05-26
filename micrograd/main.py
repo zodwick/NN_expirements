@@ -1,5 +1,5 @@
 
-from visualiser import draw_dot
+from visualiser import draw_dot, visualize_graph
 
 class Value:
     def __init__(self,data,children=(),op="",label=""):
@@ -35,3 +35,4 @@ c=Value(6)
 d=a+a
 print(d._prev)
 draw_dot(d)
+visualize_graph(d)
