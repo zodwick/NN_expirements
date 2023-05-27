@@ -111,7 +111,7 @@ class Value:
         return out
 
     def __pow__(self, other):
-        assert isinstance(other, (int, float)) # only supporting x^k
+        assert isinstance(other, (int, float))  # only supporting x^k
         out = Value(self.data**other, (self,), f"**{other}")
 
         def _gradient():
@@ -129,99 +129,76 @@ class Value:
         return self*other**-1
 
 
-
 class Neuron():
     def __init__(self, nin):
-        self.w= [Value(random.uniform(-1,1))]*nin
-        self.b=Value(random.uniform(-1,1))
-        
-    def __call__(self,x):
-        act = sum((wi*xi for wi,xi in  zip(self.w,x)),self.b)
+        self.w = [Value(random.uniform(-1, 1))]*nin
+        self.b = Value(random.uniform(-1, 1))
+
+    def __call__(self, x):
+        act = sum((wi*xi for wi, xi in zip(self.w, x)), self.b)
         out = act.tanh()
         return out
-        
-        
-        
+
+
 class Layer():
-    
-    def __init__(self,nin,nout) :
-        self.neurons=[Neuron(nin) for _ in range(nout)]
+
+    def __init__(self, nin, nout):
+        self.neurons = [Neuron(nin) for _ in range(nout)]
         # create a list of neurons of size nout with nin inputs each
-    
-    def __call__(self,x):
-        outs=list(n(x) for n in self.neurons)
+
+    def __call__(self, x):
+        outs = list(n(x) for n in self.neurons)
         # call each neuron with input x and store output in a list
-        return outs[0]  if len(outs)==1 else outs
-    
+        return outs[0] if len(outs) == 1 else outs
+
+
 class MLP():
     # multi layer perceptron
-    def __init__(self,nin,nouts):
+    def __init__(self, nin, nouts):
         # nouts is a list of number of neurons in each layer
         sz = [nin]+nouts
         # sz is a list of number of inputs and outputs of each layer
-        self.layers = [Layer(sz[i],sz[i+1]) for i in range(len(nouts))]
+        self.layers = [Layer(sz[i], sz[i+1]) for i in range(len(nouts))]
         # create a list of layers with nin inputs and nouts[i] outputs for each layer
         # len(nouts) is used as first layer (non hidden)
-        
-    def __call__(self,x):
+
+    def __call__(self, x):
         for layer in self.layers:
-            x=layer(x)
+            x = layer(x)
             # we pass on output of one layer as input to next layer since x variable is overwritten
         return x
-        
-        
-        
-        
-d=Neuron(8)   
 
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+def test_backprop():
+    # inputs x1,x2
+    x1 = Value(2.0, label='x1')
+    x2 = Value(0.0, label='x2')
+    # weights w1,w2
+    w1 = Value(-3.0, label='w1')
+    w2 = Value(1.0, label='w2')
+    # bias of the neuron
+    b = Value(6.8813735870195432, label='b')
+    # x1*w1 + x2*w2 + b
+    x1w1 = x1*w1
+    x1w1.label = 'x1*w1'
+    x2w2 = x2*w2
+    x2w2.label = 'x2*w2'
+    x1w1x2w2 = x1w1 + x2w2
+    x1w1x2w2.label = 'x1*w1 + x2*w2'
+    n = x1w1x2w2 + b
+    n.label = 'n'
+    # ----
+    e = (2*n).exp()
+    o = (e - 1) / (e + 1)
+    # ----
+    o.label = 'o'
+    o.backpropogate()
 
-# inputs x1,x2
-x1 = Value(2.0, label='x1')
-x2 = Value(0.0, label='x2')
-# weights w1,w2
-w1 = Value(-3.0, label='w1')
-w2 = Value(1.0, label='w2')
-# bias of the neuron
-b = Value(6.8813735870195432, label='b')
-# x1*w1 + x2*w2 + b
-x1w1 = x1*w1
-x1w1.label = 'x1*w1'
-x2w2 = x2*w2
-x2w2.label = 'x2*w2'
-x1w1x2w2 = x1w1 + x2w2
-x1w1x2w2.label = 'x1*w1 + x2*w2'
-n = x1w1x2w2 + b
-n.label = 'n'
-# ----
-e = (2*n).exp()
-o = (e - 1) / (e + 1)
-# ----
-o.label = 'o'
-o.backpropogate()
+
+def test_mlp():
+    x = MLP(3, [4, 4, 1])
+    n = [2.0, 3.0, -1.0]
+    print(x(n))
+
+
+test_mlp()
