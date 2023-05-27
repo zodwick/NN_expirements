@@ -131,13 +131,16 @@ class Value:
 
 class Neuron():
     def __init__(self, nin):
-        self.w = [Value(random.uniform(-1, 1))]*nin
+        self.w = [Value(random.uniform(-1, 1)) for _ in range(nin)]
         self.b = Value(random.uniform(-1, 1))
 
     def __call__(self, x):
         act = sum((wi*xi for wi, xi in zip(self.w, x)), self.b)
         out = act.tanh()
         return out
+
+    def parameters(self):
+        return self.w + [self.b]
 
 
 class Layer():
@@ -150,6 +153,13 @@ class Layer():
         outs = list(n(x) for n in self.neurons)
         # call each neuron with input x and store output in a list
         return outs[0] if len(outs) == 1 else outs
+    
+    def parameters(self):
+        params=[]
+        for neuron in self.neurons:
+            ps = neuron.parameters()
+            params.extend(ps)
+        return params
 
 
 class MLP():
@@ -167,6 +177,13 @@ class MLP():
             x = layer(x)
             # we pass on output of one layer as input to next layer since x variable is overwritten
         return x
+    
+    def parameters(self):
+        params=[]
+        for layer in self.layers:
+            ps = layer.parameters()
+            params.extend(ps)
+        return params
 
 
 def test_backprop():
@@ -195,10 +212,21 @@ def test_backprop():
     o.backpropogate()
 
 
-def test_mlp():
-    x = MLP(3, [4, 4, 1])
-    n = [2.0, 3.0, -1.0]
-    print(x(n))
+n = MLP(3, [4, 4, 1])
+
+xs = [
+    [2.0, 3.0, -1.0],
+    [3.0, -1.0, 0.5],
+    [0.5, 1.0, 1.0],
+    [1.0, 1.0, -1.0]
+]
+
+ys = [1.0, -1.0, -1.0, 1.0]
+ypred = [n(x) for x in xs]
 
 
-test_mlp()
+loss = sum((yout-ytrue)**2 for yout, ytrue in zip(ypred, ys))
+
+loss.backpropogate()
+
+print(n.layers[0].neurons[0].w[0].grad)
