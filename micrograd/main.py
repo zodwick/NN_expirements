@@ -33,21 +33,23 @@ class Value:
         return out
 
     def __sub__(self, other):
-        if not isinstance(other, Value):
-            other = Value(other)
+        # if not isinstance(other, Value):
+        #     other = Value(other)
 
-        out = Value(self.data+other.data, (self, other), "+")
+        # out = Value(self.data-other.data, (self, other), "+")
 
-        def _gradient():
-            self.grad += 1*out.grad
-            other.grad += (-1*out.grad)
+        # def _gradient():
+        #     self.grad += 1*out.grad
+        #     other.grad += (-1*out.grad)
 
-        out._gradient = _gradient
-        # calling function to calculate gradient of output wrt self and other storing in grad attribute of self and other
-        return out
+        # out._gradient = _gradient
+        # # calling function to calculate gradient of output wrt self and other storing in grad attribute of self and other
+        # return out
+        return self+(-other)
 
     def __mul__(self, other):
-        print(self, other)
+
+
         if not isinstance(other, Value):
             other = Value(other)
         out = Value(self.data*other.data, (self, other), "*")
@@ -59,24 +61,31 @@ class Value:
         return out
 
     def __rmul__(self, other):
-        print(self, other)
+
         # a is self and 2 is other
         return self*other
+    
+    def __radd__(self, other):
+        return self+other
 
     def backpropogate(self):
         topo_list = []
         self.grad = 1
+        visited = set()
+
 
         def build_backprop_list(x: Value):
-            visited = set()
             for children in x._prev:
                 if children not in visited:
                     visited.add(children)
                     build_backprop_list(children)
             topo_list.append(x)
+            
 
         build_backprop_list(self)
+
         for node in reversed(topo_list):
+            print(node.label,"============", node.data)
             node._gradient()
 
     def tanh(self):
@@ -95,62 +104,60 @@ class Value:
 
     def exp(self):
         x = self.data
-        out = Value(math.exp(x), (self,), "exp")
+        out = Value(math.exp(x), (self, ), 'exp')
+        
+        def _backward():
+            # print("out.grad",out.grad)
+            # print("out.data",out.data)
+            # print("self grad",self.grad)
+            # print("output",out.data*out.grad)
+            self.grad += out.data * out.grad 
+        out._gradient = _backward
+            
+        return out
+
+    def __pow__(self, other):
+        assert isinstance(other, (int, float))
+        out = Value(self.data**other, (self,), f"**{other}")
 
         def _gradient():
-            # out.data is the local gradient of exp wrt x 
-            self.grad += out.dat * out.grad
-            
-        out._gradient = _gradient
-        return out
-            
-            
-    def __pow__(self,other):
-        assert isinstance(other,int | float)
-        out = Value(self.data**other,(self,),"**")
-        
-        
-        def _gradient():
-            local_gradient=other*(self.data**(other-1))
-            self.grad += local_gradient*out.grad
-            
+            # local_gradient = other*(self.data**(other-1))
+            # self.grad += local_gradient*out.grad
+            self.grad += other * (self.data ** (other - 1)) * out.grad
+
+
         out._gradient = _gradient
         return out
     
+    def __neg__(self): # -self
+        return self * -1
+
+    def __truediv__(self, other):
+        # a/b = a*(b**-1)
+        return self*other**-1
 
 
-def main():
 
-    # input nodes
-    x1 = Value(2.0, label="x1")
-    x2 = Value(0.0, label="x2")
-
-    # weights
-    w1 = Value(-3.0, label="w1")
-    w2 = Value(1.0, label="w2")
-
-    # bias of neuron
-    b = Value(6.88137, label="b")
-
-    # x1*w1+x2*w2+b (sigma xi*wi+b) where b is bias
-
-    # x1w1 = x1*w1
-    # x1w1.label = "x1w1"
-
-    # x2w2 = x2*w2
-    # x2w2.label = "x2w2"
-
-    # x1w1x2w2 = x1w1+x2w2
-    # x1w1x2w2.label = "x1w1x2w2"
-
-    # n = x1w1x2w2+b
-    # n.label = "n"
-    # o = n.tanh()
-    # o.label = "o"
-    # o.backpropogate()
-
-    a = Value(2.0)
-    print(5*a)
+# inputs x1,x2
+x1 = Value(2.0, label='x1')
+x2 = Value(0.0, label='x2')
+# weights w1,w2
+w1 = Value(-3.0, label='w1')
+w2 = Value(1.0, label='w2')
+# bias of the neuron
+b = Value(6.8813735870195432, label='b')
+# x1*w1 + x2*w2 + b
+x1w1 = x1*w1; x1w1.label = 'x1*w1'
+x2w2 = x2*w2; x2w2.label = 'x2*w2'
+x1w1x2w2 = x1w1 + x2w2; x1w1x2w2.label = 'x1*w1 + x2*w2'
+n = x1w1x2w2 + b; n.label = 'n'
+# ----
+e = (2*n).exp()
+o = (e - 1) / (e + 1)
+# ----
+o.label = 'o'
+o.backpropogate()
 
 
-main()
+
+
