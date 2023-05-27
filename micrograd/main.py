@@ -1,5 +1,6 @@
 from graphviz import Source, Digraph
 import math
+import random
 
 
 class Value:
@@ -126,6 +127,56 @@ class Value:
         # a/b = a*(b**-1)
         return self*other**-1
 
+
+
+class Neuron():
+    def __init__(self, nin):
+        self.w= [Value(random.uniform(-1,1))]*nin
+        self.b=Value(random.uniform(-1,1))
+        
+    def __call__(self,x):
+        act = sum((wi*xi for wi,xi in  zip(self.w,x)),self.b)
+        out = act.tanh()
+        return out
+        
+        
+        
+class Layer():
+    
+    def __init__(self,nin,nout) :
+        self.neurons=[Neuron(nin) for _ in range(nout)]
+        # create a list of neurons of size nout with nin inputs each
+        
+        
+d=Neuron(8)   
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
 # inputs x1,x2
 x1 = Value(2.0, label='x1')
