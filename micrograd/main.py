@@ -1,3 +1,4 @@
+from typing import Any
 from graphviz import Source, Digraph
 import math
 import random
@@ -146,6 +147,29 @@ class Layer():
     def __init__(self,nin,nout) :
         self.neurons=[Neuron(nin) for _ in range(nout)]
         # create a list of neurons of size nout with nin inputs each
+    
+    def __call__(self,x):
+        outs=list(n(x) for n in self.neurons)
+        # call each neuron with input x and store output in a list
+        return outs[0]  if len(outs)==1 else outs
+    
+class MLP():
+    # multi layer perceptron
+    def __init__(self,nin,nouts):
+        # nouts is a list of number of neurons in each layer
+        sz = [nin]+nouts
+        # sz is a list of number of inputs and outputs of each layer
+        self.layers = [Layer(sz[i],sz[i+1]) for i in range(len(nouts))]
+        # create a list of layers with nin inputs and nouts[i] outputs for each layer
+        # len(nouts) is used as first layer (non hidden)
+        
+    def __call__(self,x):
+        for layer in self.layers:
+            x=layer(x)
+            # we pass on output of one layer as input to next layer since x variable is overwritten
+        return x
+        
+        
         
         
 d=Neuron(8)   
