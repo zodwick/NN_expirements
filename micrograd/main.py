@@ -226,7 +226,6 @@ ypred = [n(x) for x in xs]
 
 
 loss = sum((yout-ytrue)**2 for yout, ytrue in zip(ypred, ys))
-# need a better loss at some point i guess but not now
 loss.backpropogate()
 
 print(n.layers[0].neurons[0].w[0].grad)
